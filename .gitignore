@@ -1,0 +1,18 @@
+# Ambientes virtuais e IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Arquivos do Sistema Operacional
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Futuros uploads e dependências (se a gente for usar o composer lá pra frente)
+/vendor/
+/public/uploads/*
+!.gitkeep
