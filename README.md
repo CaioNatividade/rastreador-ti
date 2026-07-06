@@ -68,6 +68,3 @@ Rastreador TI/
 
 ---
 
-## 📱 5. Protótipo de Telas
-
-- https://www.figma.com/site/YsK8C3rZt6fXwerUQAJ2Vt/projeto-web-ii?t=OfxqxdVqoHSPlbWZ-6
