@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Rastreador TI</title>
+  <title>Rastreio TI</title>
 </head>
 
 <body>
