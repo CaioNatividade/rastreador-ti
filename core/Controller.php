@@ -21,4 +21,11 @@ abstract class Controller
         extract($data, EXTR_SKIP);
         require $viewsDirectory . '/layouts/main.php';
     }
+
+    protected function redirect(string $route): never
+    {
+        $basePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+        header('Location: ' . $basePath . '/' . ltrim($route, '/'));
+        exit;
+    }
 }

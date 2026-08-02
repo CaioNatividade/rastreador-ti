@@ -18,11 +18,6 @@ class HomeController extends Controller
         ]);
     }
 
-    public function equipamentos(): void
-    {
-        $this->view('equipamentos');
-    }
-
     public function categorias(): void
     {
         $this->view('categorias');

@@ -19,16 +19,18 @@ class EquipamentosModel
     /** @var array<int, array<string, mixed>> */
     public array $rows = [];
 
-    public function save(): void
+    public function save(): int
     {
         $repository = new EquipamentosRepository();
 
         if ($this->id !== null) {
             $repository->update($this);
-            return;
+            return $this->id;
         }
 
-        $repository->insert($this);
+        $this->id = $repository->insert($this);
+
+        return $this->id;
     }
 
     /** @return array<int, array<string, mixed>> */
