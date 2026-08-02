@@ -1,9 +1,12 @@
 <?php
 
-class Database
-{
+namespace Config;
+use PDO;
+use PDOException;
+
+class Database {
     // Guarda a única instância da conexão PDO durante a execução da página
-    private static ?PDO $instancia = null;
+    private static $instancia = null;
 
     // Dados de acesso ao banco (ajustar host/usuário/senha se necessário)
     private const HOST = 'localhost';
@@ -11,8 +14,7 @@ class Database
     private const USER = 'root';
     private const SENHA = '';
 
-    public static function getInstance(): PDO
-    {
+    public static function getInstance(): PDO {
         // Se ainda não existe conexão aberta, cria uma agora
         if (self::$instancia === null) {
             $dsn = 'mysql:host=' . self::HOST . ';dbname=' . self::DBNAME . ';charset=utf8mb4';
@@ -31,8 +33,6 @@ class Database
                     PDO::ATTR_DEFAULT_FETCH_MODE,
                     PDO::FETCH_ASSOC
                 );
-
-
             } catch (PDOException $erro) {
                 // Em produção isso deveria ir para um log, não para a tela.
                 // Por enquanto, nível básico: apenas interrompe e avisa.

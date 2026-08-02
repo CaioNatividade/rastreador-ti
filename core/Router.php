@@ -7,7 +7,7 @@ class Router{
         $url = $_GET['rota'] ?? 'home';
         $url = explode("/", $url);
 
-        $controllerName = "App\\Controllers\\" . ucfirst($url[0] . "Controller");
+        $controllerName = "App\\Controllers\\" . ucfirst($url[0]) . "Controller";
         $methodName = $url[1] ?? "index";
 
         if (class_exists($controllerName)){

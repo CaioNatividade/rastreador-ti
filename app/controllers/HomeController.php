@@ -2,20 +2,41 @@
 
 namespace App\Controllers;
 
-class HomeController {
-  public static function index() {
-    require '../app/views/main.php';
+use App\Models\EquipamentosModel;
+use Core\Controller;
+
+class HomeController extends Controller {
+  public function index() {
+    $model = new EquipamentosModel();
+    $dataEquipamentos = $model->getAllRows();
+  
+    $this->view("home", [
+      'dataEquipamentos' => $dataEquipamentos
+    ]);
   }
 
-  public static function equipamentos() {
-    require '../app/views/equipamentos.php';
+  public function equipamentos() {
+    $this->view("equipamentos");
   }
 
-  public static function categorias() {
-    require '../app/views/categorias.php';
+  public function categorias() {
+    $this->view("categorias");
   }
 
-  public static function emprestimos() {
-    require '../app/views/emprestimos.php';
+  public function emprestimos() {
+    $model = new EquipamentosModel();
+    $dataEquipamentos = $model->getAllRows();
+  
+    $this->view("emprestimos", [
+      'dataEquipamentos' => $dataEquipamentos
+    ]);
+  }
+
+  public function manutencoes() {
+    $this->view("manutencoes");
+  }
+
+  public function usuarios() {
+    $this->view("usuarios");
   }
 }
