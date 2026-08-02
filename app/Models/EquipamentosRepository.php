@@ -1,31 +1,37 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Models;
+
 use Config\Database;
 use PDO;
 
-class EquipamentosRepository{
-    private $con;
+class EquipamentosRepository
+{
+    private PDO $connection;
 
-    public function __construct(){
-        $this->con = Database::getInstance();
+    public function __construct()
+    {
+        $this->connection = Database::getInstance();
     }
 
-    public function insert(EquipamentosModel $model){
-
+    public function insert(EquipamentosModel $model): void
+    {
+        // Implementação prevista para a etapa de cadastro da Entrega 3.
     }
 
-    public function update($model){
-
+    public function update(EquipamentosModel $model): void
+    {
+        // Implementação prevista para a etapa de atualização do CRUD.
     }
 
-    public function select(){
-        $sql = "SELECT * FROM equipamentos";
-        $stmt = $this->con->prepare($sql);
+    /** @return array<int, array<string, mixed>> */
+    public function select(): array
+    {
+        $statement = $this->connection->prepare('SELECT * FROM equipamentos');
+        $statement->execute();
 
-        $stmt->execute();
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $statement->fetchAll();
     }
-
 }
-?>

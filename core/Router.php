@@ -1,27 +1,42 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Core;
 
-class Router{
-    public function run(){
-        $url = $_GET['rota'] ?? 'home';
-        $url = explode("/", $url);
+use App\Controllers\HomeController;
 
-        $controllerName = "App\\Controllers\\" . ucfirst($url[0]) . "Controller";
-        $methodName = $url[1] ?? "index";
+class Router
+{
+    /** @var array<string, array{class-string, string}> */
+    private const ROUTES = [
+        'home' => [HomeController::class, 'index'],
+        'home/equipamentos' => [HomeController::class, 'equipamentos'],
+        'home/categorias' => [HomeController::class, 'categorias'],
+        'home/emprestimos' => [HomeController::class, 'emprestimos'],
+        'home/manutencoes' => [HomeController::class, 'manutencoes'],
+        'home/usuarios' => [HomeController::class, 'usuarios'],
+    ];
 
-        if (class_exists($controllerName)){
-            $controller = new $controllerName();
+    public function run(): void
+    {
+        $route = trim((string) ($_GET['rota'] ?? 'home'), '/');
+        $route = $route === '' ? 'home' : $route;
 
-            if(method_exists($controller, $methodName)){
-                $controller->$methodName();
-            }else {
-                echo "Método " . $methodName . " não encontrado";
-            }
-        } else {
-            echo "Controller " . $controllerName . " não encontrado";
+        if (!isset(self::ROUTES[$route])) {
+            $this->notFound();
+            return;
         }
+
+        [$controllerClass, $method] = self::ROUTES[$route];
+        $controller = new $controllerClass();
+        $controller->{$method}();
+    }
+
+    private function notFound(): void
+    {
+        http_response_code(404);
+        echo '<h1>Erro 404</h1>';
+        echo '<p>Página não encontrada.</p>';
     }
 }
-
-?>

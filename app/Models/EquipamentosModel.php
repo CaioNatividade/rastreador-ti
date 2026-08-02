@@ -1,27 +1,42 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-class EquipamentosModel {
-    public int $id, $categoria_id, $status;
-    public string $nome, $marca, $modelo, $numero_serie, $data_aquisicao, $observacoes, $criado_em, $atualizado_em;
-    public $rows;
+class EquipamentosModel
+{
+    public ?int $id = null;
+    public int $categoriaId;
+    public string $nome;
+    public ?string $marca = null;
+    public ?string $modelo = null;
+    public string $numeroSerie;
+    public string $status = 'disponivel';
+    public ?string $dataAquisicao = null;
+    public ?string $observacoes = null;
 
-    public function save(){
-        $con = new EquipamentosRepository();
-        if ($this->id){
-            $con->update($this);
-        } else{
-            $con->insert($this);
+    /** @var array<int, array<string, mixed>> */
+    public array $rows = [];
+
+    public function save(): void
+    {
+        $repository = new EquipamentosRepository();
+
+        if ($this->id !== null) {
+            $repository->update($this);
+            return;
         }
+
+        $repository->insert($this);
     }
 
-    public function getAllRows(){
-        $con = new EquipamentosRepository();
-        return $this->rows = $con->select();
-        
+    /** @return array<int, array<string, mixed>> */
+    public function getAllRows(): array
+    {
+        $repository = new EquipamentosRepository();
+        $this->rows = $repository->select();
+
+        return $this->rows;
     }
-    
 }
-
-?>

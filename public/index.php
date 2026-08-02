@@ -1,30 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 use Core\Router;
 
-require_once '../vendor/autoload.php';
+require_once dirname(__DIR__) . '/vendor/autoload.php';
 
-$router = new Router();
-$router->run();
+header('Content-Type: text/html; charset=UTF-8');
 
+try {
+    (new Router())->run();
+} catch (Throwable $error) {
+    error_log($error->__toString());
+    http_response_code(500);
 
-// $rota = $_GET['rota'] ?? 'home';
-// echo $rota;
-// switch ($rota) {
-//     case 'home':
-//         // $controller = new HomeController();
-//         HomeController::index();
-//         break;
-//     case 'equipamentos':
-//         HomeController::equipamentos();
-//         break;
-//     case 'categorias':
-//         HomeController::categorias();
-//         break;
-//     case 'emprestimos':
-//         HomeController::emprestimos();
-//         break;
-//     default:
-//         echo "Erro 404 - Página não encontrada";
-//         break;
-// }
+    echo '<h1>Erro interno</h1>';
+    echo '<p>Não foi possível processar a solicitação.</p>';
+}
