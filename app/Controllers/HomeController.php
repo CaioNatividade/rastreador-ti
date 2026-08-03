@@ -27,11 +27,7 @@ class HomeController extends Controller
 
     public function emprestimos(): void
     {
-        $model = new EquipamentosModel();
-
-        $this->view('emprestimos', [
-            'dataEquipamentos' => $model->getAllRows(),
-        ]);
+        $this->view('emprestimos');
     }
 
     public function manutencoes(): void
