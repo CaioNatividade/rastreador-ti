@@ -1,0 +1,17 @@
+{
+    "name": "zyzaous/rastreador-ti",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Core\\": "core/",
+            "Config\\": "config/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Vinicius Alencar",
+            "email": "vinicius_alencar2009@hotmail.com"
+        }
+    ],
+    "require": {}
+}

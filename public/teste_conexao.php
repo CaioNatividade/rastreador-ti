@@ -1,8 +1,14 @@
 <?php
-require_once '../config/Database.php';
 
-// Lista de todas as tabelas que devem existir no banco, conforme database/rastreio_ti.sql
-$tabelas = [
+declare(strict_types=1);
+
+use Config\Database;
+
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
+header('Content-Type: text/html; charset=UTF-8');
+
+$tables = [
     'usuarios',
     'categorias',
     'equipamentos',
@@ -11,83 +17,105 @@ $tabelas = [
     'termos_responsabilidade',
 ];
 
-echo "<!DOCTYPE html>";
-echo "<html lang='pt-BR'><head><meta charset='UTF-8'><title>Teste de Conexão</title></head><body>";
-echo "<h1>Teste de Conexão com o Banco de Dados (PDO)</h1>";
+$tableResults = [];
+$categories = [];
+$admin = false;
+$connectionError = false;
 
 try {
     $pdo = Database::getInstance();
 
-    echo "<h2 style='color: green;'>✅ Conexão estabelecida com sucesso via PDO</h2>";
-
-    // ---------------------------------------------------------------
-    // 1. Verifica se cada tabela esperada existe e conta os registros
-    // ---------------------------------------------------------------
-    echo "<h3>Verificação das tabelas</h3>";
-    echo "<table border='1' cellpadding='8' cellspacing='0'>";
-    echo "<tr><th>Tabela</th><th>Status</th><th>Registros</th></tr>";
-
-    $tabelasOk = 0;
-
-    foreach ($tabelas as $tabela) {
+    foreach ($tables as $table) {
         try {
-            $stmt = $pdo->query("SELECT COUNT(*) AS total FROM `$tabela`");
-            $total = $stmt->fetch()['total'];
-
-            echo "<tr>
-                    <td>$tabela</td>
-                    <td style='color: green;'>OK ✅</td>
-                    <td>$total</td>
-                  </tr>";
-            $tabelasOk++;
-        } catch (PDOException $e) {
-            echo "<tr>
-                    <td>$tabela</td>
-                    <td style='color: red;'>Não encontrada ❌</td>
-                    <td>-</td>
-                  </tr>";
+            $statement = $pdo->query("SELECT COUNT(*) AS total FROM `{$table}`");
+            $tableResults[$table] = (int) $statement->fetch()['total'];
+        } catch (PDOException) {
+            $tableResults[$table] = null;
         }
     }
 
-    echo "</table>";
-    echo "<p><strong>$tabelasOk de " . count($tabelas) . " tabelas encontradas e acessíveis.</strong></p>";
+    $categories = $pdo
+        ->query('SELECT id, nome, descricao FROM categorias')
+        ->fetchAll();
 
-    // ---------------------------------------------------------------
-    // 2. Mostra uma amostra de dados reais (categorias cadastradas)
-    // ---------------------------------------------------------------
-    echo "<h3>Amostra de dados (categorias cadastradas)</h3>";
-    $stmt = $pdo->query('SELECT id, nome, descricao FROM categorias');
-    $categorias = $stmt->fetchAll();
-
-    if (count($categorias) > 0) {
-        echo "<ul>";
-        foreach ($categorias as $categoria) {
-            echo "<li><strong>" . htmlspecialchars($categoria['nome']) . "</strong>"
-               . " — " . htmlspecialchars($categoria['descricao'] ?? '') . "</li>";
-        }
-        echo "</ul>";
-    } else {
-        echo "<p>Nenhuma categoria cadastrada ainda.</p>";
-    }
-
-    // ---------------------------------------------------------------
-    // 3. Confirma existência do usuário admin (sem expor dados sensíveis)
-    // ---------------------------------------------------------------
-    echo "<h3>Usuário administrador</h3>";
-    $stmt = $pdo->query("SELECT nome, email, perfil FROM usuarios WHERE perfil = 'admin' LIMIT 1");
-    $admin = $stmt->fetch();
-
-    if ($admin) {
-        echo "<p>✅ Encontrado: <strong>" . htmlspecialchars($admin['nome']) . "</strong>"
-           . " (" . htmlspecialchars($admin['email']) . ") - perfil: " . htmlspecialchars($admin['perfil']) . "</p>";
-    } else {
-        echo "<p>⚠️ Nenhum usuário administrador encontrado.</p>";
-    }
-
-} catch (Exception $e) {
-    echo "<h2 style='color: red;'>❌ Erro na conexão com o banco</h2>";
-    echo "<p>" . htmlspecialchars($e->getMessage()) . "</p>";
-    echo "<p>Verifique se o MySQL está ligado no XAMPP e se o banco <code>rastreio_ti</code> foi importado corretamente.</p>";
+    $admin = $pdo
+        ->query("SELECT nome, email, perfil FROM usuarios WHERE perfil = 'admin' LIMIT 1")
+        ->fetch();
+} catch (Throwable $error) {
+    error_log($error->__toString());
+    http_response_code(500);
+    $connectionError = true;
 }
+?>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Conexão</title>
+</head>
+<body>
+    <h1>Teste de Conexão com o Banco de Dados (PDO)</h1>
 
-echo "</body></html>";
+    <?php if ($connectionError): ?>
+        <h2 style="color: red;">Erro na conexão com o banco</h2>
+        <p>Não foi possível concluir o teste. Consulte o log da aplicação.</p>
+    <?php else: ?>
+        <h2 style="color: green;">Conexão estabelecida com sucesso via PDO</h2>
+        <h3>Verificação das tabelas</h3>
+
+        <table border="1" cellpadding="8" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Tabela</th>
+                    <th>Status</th>
+                    <th>Registros</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($tableResults as $table => $total): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($table) ?></td>
+                        <td style="color: <?= $total === null ? 'red' : 'green' ?>;">
+                            <?= $total === null ? 'Não encontrada' : 'OK' ?>
+                        </td>
+                        <td><?= $total === null ? '-' : $total ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <p>
+            <strong>
+                <?= count(array_filter($tableResults, static fn (?int $total): bool => $total !== null)) ?>
+                de <?= count($tables) ?> tabelas encontradas e acessíveis.
+            </strong>
+        </p>
+
+        <h3>Amostra de dados (categorias cadastradas)</h3>
+        <?php if ($categories !== []): ?>
+            <ul>
+                <?php foreach ($categories as $category): ?>
+                    <li>
+                        <strong><?= htmlspecialchars($category['nome']) ?></strong>
+                        — <?= htmlspecialchars($category['descricao'] ?? '') ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Nenhuma categoria cadastrada ainda.</p>
+        <?php endif; ?>
+
+        <h3>Usuário administrador</h3>
+        <?php if ($admin): ?>
+            <p>
+                Encontrado: <strong><?= htmlspecialchars($admin['nome']) ?></strong>
+                (<?= htmlspecialchars($admin['email']) ?>)
+                — perfil: <?= htmlspecialchars($admin['perfil']) ?>
+            </p>
+        <?php else: ?>
+            <p>Nenhum usuário administrador encontrado.</p>
+        <?php endif; ?>
+    <?php endif; ?>
+</body>
+</html>

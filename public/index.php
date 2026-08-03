@@ -1,23 +1,19 @@
 <?php
-require_once '../app/controllers/HomeController.php';
 
-$rota = $_GET['rota'] ?? 'home';
+declare(strict_types=1);
 
-switch ($rota) {
-    case 'home':
-        // $controller = new HomeController();
-        HomeController::index();
-        break;
-    case 'equipamentos':
-        HomeController::equipamentos();
-        break;
-    case 'categorias':
-        HomeController::categorias();
-        break;
-    case 'emprestimos':
-        HomeController::emprestimos();
-        break;
-    default:
-        echo "Erro 404 - Página não encontrada";
-        break;
+use Core\Router;
+
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
+header('Content-Type: text/html; charset=UTF-8');
+
+try {
+    (new Router())->run();
+} catch (Throwable $error) {
+    error_log($error->__toString());
+    http_response_code(500);
+
+    echo '<h1>Erro interno</h1>';
+    echo '<p>Não foi possível processar a solicitação.</p>';
 }
