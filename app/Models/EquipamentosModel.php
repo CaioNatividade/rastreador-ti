@@ -41,4 +41,12 @@ class EquipamentosModel
 
         return $this->rows;
     }
+
+    /**
+     * @return array{total: int, disponiveis: int, em_uso: int, manutencao: int}
+     */
+    public function getDashboardSummary(): array
+    {
+        return (new EquipamentosRepository())->selectDashboardSummary();
+    }
 }

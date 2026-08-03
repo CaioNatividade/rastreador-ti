@@ -1,67 +1,15 @@
-<?php
+<div class="mb-4">
+    <h1 class="mb-1">Empréstimos</h1>
+    <p class="text-muted mb-0">Controle de entrega e devolução de ativos.</p>
+</div>
 
-/** @var array<int, array<string, mixed>> $dataEquipamentos */
-$status = [
-  'disponivel' => [
-    'texto' => 'Disponível',
-    'classe' => 'bg-success'
-  ],
-  'em_uso' => [
-    'texto' => 'Em uso',
-    'classe' => 'bg-primary'
-  ],
-  'manutencao' => [
-    'texto' => 'Manutenção',
-    'classe' => 'bg-warning text-dark'
-  ],
-  'baixado' => [
-    'texto' => 'Baixado',
-    'classe' => 'bg-danger'
-  ]
-];
-?>
-
-<h1 class="mb-3">Listagem de Empréstimos</h1>
-<!-- <h3 class="mt-5 mb-3 text-center">Últimos Movimentos</h3> -->
-
-<div class="table-responsive rounded-3 overflow-hidden">
-  <table class="table table-hover align-middle ">
-    <thead class="table-dark">
-      <tr>
-        <th>Nome/Modelo</th>
-        <th class="text-center">Categoria</th>
-        <th class="text-center">Número de Série</th>
-        <th class="text-center">Status</th>
-        <th class="text-center">Data</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($dataEquipamentos as $e): ?>
-        <?php $statusAtual = $status[$e['status']] ?? ['texto' => 'Desconhecido', 'classe' => 'bg-secondary']; ?>
-        <tr>
-          <td class="align-middle py-3">
-            <span><?= htmlspecialchars($e['nome']) ?></span>
-          </td>
-          <td class="text-center">
-            <span><?= htmlspecialchars((string) $e['categoria_id']) ?></span>
-          </td>
-          <td class="text-center">
-            <span><?= htmlspecialchars($e['numero_serie']) ?></span>
-          </td>
-          <td class="text-center">
-            <span class="p-3 badge <?= htmlspecialchars($statusAtual['classe']) ?>" style="width: 100%;">
-              <?= htmlspecialchars($statusAtual['texto']) ?>
-            </span>
-          </td>
-          <td class="text-center">
-            <span><?= htmlspecialchars($e['atualizado_em']) ?></span>
-          </td>
-          <td>
-            <a href="#">Exc | Edit | Viz</a>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
+<div class="card shadow-sm border-0">
+    <div class="card-body p-5 text-center">
+        <i class="bi bi-arrow-left-right display-4 text-primary"></i>
+        <h2 class="h4 mt-3">Módulo em desenvolvimento</h2>
+        <p class="text-muted mb-0">
+            O registro e o acompanhamento de empréstimos serão implementados
+            em uma próxima entrega.
+        </p>
+    </div>
 </div>

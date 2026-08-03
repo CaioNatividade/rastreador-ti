@@ -118,4 +118,28 @@ class EquipamentosRepository
 
         return $statement->fetchColumn() !== false;
     }
+
+    /**
+     * @return array{total: int, disponiveis: int, em_uso: int, manutencao: int}
+     */
+    public function selectDashboardSummary(): array
+    {
+        $sql = <<<'SQL'
+            SELECT
+                COUNT(*) AS total,
+                COALESCE(SUM(status = 'disponivel'), 0) AS disponiveis,
+                COALESCE(SUM(status = 'em_uso'), 0) AS em_uso,
+                COALESCE(SUM(status = 'manutencao'), 0) AS manutencao
+            FROM equipamentos
+            SQL;
+
+        $summary = $this->connection->query($sql)->fetch();
+
+        return [
+            'total' => (int) $summary['total'],
+            'disponiveis' => (int) $summary['disponiveis'],
+            'em_uso' => (int) $summary['em_uso'],
+            'manutencao' => (int) $summary['manutencao'],
+        ];
+    }
 }

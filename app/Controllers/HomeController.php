@@ -12,9 +12,11 @@ class HomeController extends Controller
     public function index(): void
     {
         $model = new EquipamentosModel();
+        $equipamentos = $model->getAllRows();
 
         $this->view('home', [
-            'dataEquipamentos' => $model->getAllRows(),
+            'equipamentosRecentes' => array_slice($equipamentos, 0, 5),
+            'resumo' => $model->getDashboardSummary(),
         ]);
     }
 
@@ -25,11 +27,7 @@ class HomeController extends Controller
 
     public function emprestimos(): void
     {
-        $model = new EquipamentosModel();
-
-        $this->view('emprestimos', [
-            'dataEquipamentos' => $model->getAllRows(),
-        ]);
+        $this->view('emprestimos');
     }
 
     public function manutencoes(): void
