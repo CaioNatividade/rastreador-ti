@@ -144,6 +144,10 @@ rastreio-ti/
 
 O diretório `vendor/` é gerado por `composer install` e não é versionado.
 
+## Publicação acadêmica no InfinityFree
+
+O projeto inclui uma estrutura compatível com a pasta `htdocs/` do InfinityFree, mantendo `public/` como entrada interna e bloqueando o acesso direto aos diretórios de código e configuração. Consulte o guia completo em [`DEPLOYMENT_INFINITYFREE.md`](DEPLOYMENT_INFINITYFREE.md).
+
 ## Banco de dados
 
 O script atual cria as tabelas:

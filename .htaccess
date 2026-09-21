@@ -1,0 +1,20 @@
+Options -Indexes
+
+RewriteEngine On
+
+# Impede o acesso direto ao código, às configurações e a arquivos internos.
+RewriteRule ^(?:app|config|core|database|vendor)(?:/|$) - [F,L,NC]
+RewriteRule ^(?:\.git|composer\.(?:json|lock)|README\.md|desktop\.ini)$ - [F,L,NC]
+
+# A pasta public não deve ser acessada pela URL. A condição permite somente
+# os encaminhamentos internos dos arquivos estáticos definidos logo abaixo.
+RewriteCond %{THE_REQUEST} \s/+public(?:/|[\s?]) [NC]
+RewriteRule ^public(?:/|$) - [F,L]
+
+# Mantém os arquivos públicos disponíveis sem expor o restante do projeto.
+RewriteRule ^(css|js|uploads)/(.*)$ public/$1/$2 [L,NC]
+
+# Todas as demais requisições passam pelo front controller da raiz.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?rota=$1 [QSA,L]
