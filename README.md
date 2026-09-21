@@ -73,9 +73,9 @@ O projeto foi desenvolvido e testado localmente com XAMPP, PHP 8.2 e MariaDB.
 
 3. Inicie o Apache e o MySQL/MariaDB.
 
-4. Importe [`database/rastreio_ti.sql`](database/rastreio_ti.sql) pelo phpMyAdmin ou pelo cliente do MySQL usando o conjunto de caracteres `utf8mb4`.
+4. Crie ou selecione o banco que será usado pela aplicação. Depois, importe [`database/rastreio_ti.sql`](database/rastreio_ti.sql) nesse banco pelo phpMyAdmin ou pelo cliente do MySQL usando o conjunto de caracteres `utf8mb4`. Em hospedagens compartilhadas, use o banco fornecido pelo provedor.
 
-5. Confira as credenciais locais em [`config/Database.php`](config/Database.php). A configuração padrão do projeto é:
+5. Para desenvolvimento local, copie [`config/database.example.php`](config/database.example.php) como `config/database.local.php` e ajuste as credenciais. Esse arquivo local é ignorado pelo Git. A configuração padrão é:
 
    ```text
    host: localhost
@@ -90,7 +90,7 @@ O projeto foi desenvolvido e testado localmente com XAMPP, PHP 8.2 e MariaDB.
    http://localhost/rastreio-ti/public/login
    ```
 
-> As credenciais do banco devem ser adaptadas ao ambiente local. A configuração padrão não deve ser usada em produção.
+> Em produção, prefira configurar `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` e `DB_CHARSET` no ambiente da hospedagem. As variáveis de ambiente prevalecem sobre o arquivo local e as credenciais nunca devem ser versionadas.
 
 ## Rotas implementadas
 
@@ -126,7 +126,8 @@ rastreio-ti/
 │   ├── Models/            # Models e Repositories de acesso aos dados
 │   └── Views/             # Layout, componentes e telas
 ├── config/
-│   └── Database.php      # Configuração e conexão PDO
+│   ├── Database.php          # Conexão PDO e leitura da configuração
+│   └── database.example.php # Modelo da configuração local
 ├── core/
 │   ├── Controller.php    # Controller base e renderização das Views
 │   └── Router.php        # Registro e execução das rotas
@@ -172,4 +173,4 @@ Fluxo sugerido para demonstrar o sistema:
 
 ## Observação de segurança
 
-O arquivo `public/teste_conexao.php` existe para diagnóstico no ambiente de desenvolvimento. Ele deve ser protegido ou removido antes de uma eventual publicação do sistema.
+O diagnóstico público de conexão com o banco foi removido. Não publique arquivos de teste, credenciais ou configurações locais junto com a aplicação.
