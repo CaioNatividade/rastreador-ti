@@ -19,5 +19,5 @@ desktop.ini
 !.gitkeep
 
 # Configuração local e arquivos sensíveis
-config/database.php
+/config/database.local.php
 public/teste_conexao.php
