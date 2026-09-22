@@ -1,4 +1,10 @@
 RewriteEngine On
+
+# A pasta public é acessada internamente pela raiz do site. Bloqueia apenas
+# URLs externas que tentem usar /public/ como caminho de entrada alternativo.
+RewriteCond %{THE_REQUEST} \s/+public(?:/|[\s?]) [NC]
+RewriteRule ^ - [F,L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php?rota=$1 [QSA,L]
