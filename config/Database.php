@@ -61,6 +61,6 @@ class Database
     {
         $value = getenv($name);
 
-        return $value === false || $value === '' ? $fallback : $value;
+        return $value === false ? $fallback : $value;
     }
 }

@@ -21,3 +21,8 @@ desktop.ini
 # Configuração local e arquivos sensíveis
 /config/database.local.php
 public/teste_conexao.php
+
+# Artefatos locais: bancos descartáveis de testes e pacotes de publicação
+/.runtime/
+/dist/
+/rastreio-ti-infinityfree*.zip

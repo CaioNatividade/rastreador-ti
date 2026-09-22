@@ -32,6 +32,8 @@ class LoginController extends Controller
             $_SESSION['usuario_id'] = (int) $usuario['id'];
             $_SESSION['usuario_nome'] = $usuario['nome'];
             $_SESSION['usuario_perfil'] = $usuario['perfil'];
+            $_SESSION['senha_versao'] = hash('sha256', $usuario['senha_hash']);
+            unset($_SESSION['csrf_token']);
             $this->redirect('home');
         }
 

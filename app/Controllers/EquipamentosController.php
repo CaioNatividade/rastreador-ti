@@ -10,6 +10,8 @@ use Core\Controller;
 use Core\Csrf;
 use DateTimeImmutable;
 use PDOException;
+use DomainException;
+use App\Services\AtivosService;
 
 class EquipamentosController extends Controller
 {
@@ -23,7 +25,7 @@ class EquipamentosController extends Controller
     public function index(): void
     {
         $this->view('equipamentos', [
-            'equipamentos' => $this->repository->select(),
+            'equipamentos' => $this->filtered(),
             'mensagem' => $this->feedbackMessage((string) ($_GET['resultado'] ?? '')),
             'mensagemErro' => isset($_GET['erro']),
         ]);
@@ -53,7 +55,12 @@ class EquipamentosController extends Controller
             return;
         }
 
-        $this->fillModel(new EquipamentosModel(), $input)->save();
+        try {
+            $this->fillModel(new EquipamentosModel(), $input)->save();
+        } catch (DomainException | PDOException $error) {
+            $this->saveError($error, $input);
+            return;
+        }
 
         $this->redirect('home/equipamentos?resultado=cadastrado');
     }
@@ -89,7 +96,12 @@ class EquipamentosController extends Controller
 
         $model = new EquipamentosModel();
         $model->id = $id;
-        $this->fillModel($model, $input)->save();
+        try {
+            $this->fillModel($model, $input)->save();
+        } catch (DomainException | PDOException $error) {
+            $this->saveError($error, $input, $id);
+            return;
+        }
         $this->redirect('home/equipamentos?resultado=atualizado');
     }
 
@@ -103,8 +115,11 @@ class EquipamentosController extends Controller
         }
 
         try {
-            $deleted = $this->repository->delete($id);
-            $this->redirect('home/equipamentos?' . ($deleted ? 'resultado=excluido' : 'erro=nao-encontrado'));
+            (new AtivosService())->deleteEquipment($id);
+            $this->redirect('home/equipamentos?resultado=excluido');
+        } catch (DomainException $error) {
+            $this->flash($error->getMessage(), true);
+            $this->redirect('home/equipamentos');
         } catch (PDOException) {
             $this->redirect('home/equipamentos?erro=vinculado');
         }
@@ -166,7 +181,7 @@ class EquipamentosController extends Controller
         $fields = ['nome', 'marca', 'modelo', 'numero_serie', 'categoria_id', 'status', 'data_aquisicao', 'observacoes'];
         $input = [];
         foreach ($fields as $field) {
-            $input[$field] = trim((string) ($_POST[$field] ?? ''));
+            $input[$field] = $this->field($field);
         }
         $input['status'] = $input['status'] !== '' ? $input['status'] : 'disponivel';
         return $input;
@@ -210,5 +225,45 @@ class EquipamentosController extends Controller
         $parsedDate = DateTimeImmutable::createFromFormat('!Y-m-d', $date);
 
         return $parsedDate !== false && $parsedDate->format('Y-m-d') === $date;
+    }
+
+    private function saveError(DomainException | PDOException $error, array $input, ?int $id = null): void
+    {
+        http_response_code(422);
+        if ($error instanceof PDOException) {
+            error_log($error->__toString());
+        }
+        $this->create(['status' => $error instanceof DomainException ? $error->getMessage() : 'Não foi possível salvar. Verifique o número de série e a categoria.'], $input, $id);
+    }
+
+    private function filtered(): array
+    {
+        $owner = ($_SESSION['usuario_perfil'] ?? '') === 'admin' ? null : (int) $_SESSION['usuario_id'];
+        $query = is_string($_GET['q'] ?? null) ? trim($_GET['q']) : '';
+        $status = is_string($_GET['status'] ?? null) ? $_GET['status'] : '';
+        return array_values(array_filter($this->repository->select($owner), static fn (array $row): bool =>
+            ($status === '' || $row['status'] === $status)
+            && ($query === '' || mb_stripos($row['nome'] . ' ' . $row['numero_serie'] . ' ' . $row['categoria_nome'], $query) !== false)));
+    }
+
+    public function report(): void
+    {
+        $this->view('relatorios', ['equipamentos' => $this->filtered()]);
+    }
+
+    public function csv(): void
+    {
+        $rows = $this->filtered();
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="inventario.csv"');
+        $stream = fopen('php://output', 'wb');
+        fwrite($stream, "\xEF\xBB\xBF");
+        fputcsv($stream, ['ID', 'Equipamento', 'Número de série', 'Categoria', 'Status', 'Aquisição'], ';');
+        foreach ($rows as $row) {
+            $cells = [(string) $row['id'], $row['nome'], $row['numero_serie'], $row['categoria_nome'], $row['status'], $row['data_aquisicao'] ?? ''];
+            $cells = array_map(static fn (string $v): string => preg_match('/^[=+@\-\t\r\n]/', $v) ? "'" . $v : $v, $cells);
+            fputcsv($stream, $cells, ';');
+        }
+        fclose($stream);
     }
 }

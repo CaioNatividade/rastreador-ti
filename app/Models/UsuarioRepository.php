@@ -32,8 +32,13 @@ class UsuarioRepository
             return null;
         }
 
-        unset($usuario['senha_hash']);
-
         return $usuario;
+    }
+
+    public function findActive(int $id): ?array
+    {
+        $statement = $this->connection->prepare('SELECT id, nome, email, perfil, senha_hash FROM usuarios WHERE id = ? AND ativo = 1');
+        $statement->execute([$id]);
+        return $statement->fetch() ?: null;
     }
 }

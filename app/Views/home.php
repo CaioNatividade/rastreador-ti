@@ -11,6 +11,10 @@ $statusLabels = [
 ];
 ?>
 <div class="container-fluid">
+    <div class="alert alert-info">
+        <?= ($_SESSION['usuario_perfil'] ?? '') === 'admin' ? 'Inventário completo' : 'Equipamentos sob sua responsabilidade' ?>.
+        <a href="<?= htmlspecialchars($basePath) ?>/home/emprestimos">Empréstimos ativos: <?= $emprestimosAtivos ?> — Atrasados: <?= $atrasados ?></a>
+    </div>
     <div class="mb-4">
         <h1 class="mb-1">Dashboard</h1>
         <p class="text-muted mb-0">Visão geral do inventário de equipamentos.</p>

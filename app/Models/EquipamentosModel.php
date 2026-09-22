@@ -21,16 +21,7 @@ class EquipamentosModel
 
     public function save(): int
     {
-        $repository = new EquipamentosRepository();
-
-        if ($this->id !== null) {
-            $repository->update($this);
-            return $this->id;
-        }
-
-        $this->id = $repository->insert($this);
-
-        return $this->id;
+        return (new \App\Services\AtivosService())->saveEquipment($this);
     }
 
     /** @return array<int, array<string, mixed>> */

@@ -3,7 +3,9 @@ Options -Indexes
 RewriteEngine On
 
 # Impede o acesso direto ao código, às configurações e a arquivos internos.
-RewriteRule ^(?:app|config|core|database|vendor)(?:/|$) - [F,L,NC]
+RewriteRule ^(?:app|config|core|database|vendor|tests|scripts|docs|dist|\.runtime)(?:/|$) - [F,L,NC]
+RewriteRule (^|/)\. - [F,L]
+RewriteRule \.(?:zip|sql|md|lock|json|ps1)$ - [F,L,NC]
 RewriteRule ^(?:\.git|composer\.(?:json|lock)|README\.md|desktop\.ini)$ - [F,L,NC]
 
 # Mantém os arquivos públicos disponíveis sem expor o restante do projeto.

@@ -3,6 +3,23 @@
     transition: 0.3s;
 }
 
+.sidebar { width: 260px; min-width: 260px; min-height: 100vh; }
+main { min-width: 0; }
+@media (max-width: 767px) {
+    body > .d-flex { flex-direction: column; }
+    .sidebar { width: 100%; min-height: auto; }
+    .sidebar .nav { flex-direction: row !important; justify-content: center; gap: 0.25rem !important; }
+    .sidebar .nav-link { font-size: 1rem !important; }
+    .sidebar hr { display: none; }
+}
+@media print {
+    .sidebar, .d-print-none, main > .alert { display: none !important; }
+    body, main, .card { background: white !important; }
+    main { padding: 0 !important; width: 100%; }
+    .card { border: 0; }
+    .table-responsive { overflow: visible; }
+}
+
 .nav-link:hover {
     background-color: white;
     color: black !important;

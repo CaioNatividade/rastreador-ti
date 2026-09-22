@@ -132,9 +132,10 @@ $csrfToken = Csrf::token();
 
                 <div class="col-md-3">
                     <label for="status" class="form-label">Status *</label>
+                    <p class="small text-muted">Em uso é controlado por Empréstimos. Marcar Manutenção abre uma ficha; conclua-a na aba Manutenções.</p>
                     <select class="form-select<?= $invalidClass('status') ?>" id="status" name="status" required>
                         <?php foreach (['disponivel' => 'Disponível', 'em_uso' => 'Em uso', 'manutencao' => 'Manutenção', 'baixado' => 'Baixado'] as $statusValue => $statusLabel): ?>
-                            <option value="<?= $statusValue ?>" <?= ($old['status'] ?? 'disponivel') === $statusValue ? 'selected' : '' ?>><?= $statusLabel ?></option>
+                            <option value="<?= $statusValue ?>" <?= ($old['status'] ?? 'disponivel') === $statusValue ? 'selected' : '' ?> <?= $statusValue === 'em_uso' && ($old['status'] ?? '') !== 'em_uso' ? 'disabled' : '' ?>><?= $statusLabel ?></option>
                         <?php endforeach; ?>
                     </select>
                     <?php if (isset($errors['status'])): ?><div class="invalid-feedback"><?= htmlspecialchars($errors['status']) ?></div><?php endif; ?>

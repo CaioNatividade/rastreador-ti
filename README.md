@@ -6,14 +6,14 @@ O projeto faz parte da disciplina **Projeto e Implementação de Sistemas para W
 
 ## Sobre o projeto
 
-O Rastreio TI busca centralizar o inventário e o ciclo de vida de equipamentos como notebooks, monitores, periféricos e servidores. A proposta é substituir controles descentralizados por uma aplicação capaz de registrar ativos, acompanhar sua disponibilidade e, em etapas futuras, controlar empréstimos, devoluções e manutenções.
+O Rastreio TI centraliza o inventário e o ciclo de vida de equipamentos como notebooks, monitores, periféricos e servidores. O sistema registra ativos e integra sua disponibilidade aos empréstimos, devoluções e manutenções.
 
 ### Público-alvo
 
 - **Administradores e técnicos de TI:** responsáveis pelo inventário e pelas movimentações dos ativos.
 - **Colaboradores:** usuários que poderão consultar os equipamentos sob sua responsabilidade.
 
-## Estado atual — Entrega Parcial 4
+## Estado atual — módulos da entrega final
 
 Funcionalidades implementadas e testadas:
 
@@ -36,20 +36,25 @@ Funcionalidades implementadas e testadas:
 - dashboard com indicadores reais do inventário;
 - tratamento de erros HTTP 404, 405, 422 e 500.
 
-### Funcionalidades futuras
+### Módulos integrados
 
-- cadastro e gerenciamento de categorias;
-- cadastro e gerenciamento de usuários;
-- registro de empréstimos e devoluções;
-- histórico de manutenções;
-- termos de responsabilidade e relatórios.
+- cadastro, edição e exclusão de categorias sem vínculos;
+- cadastro e edição de usuários, redefinição de senha e desativação;
+- empréstimos, devoluções e identificação de atrasos;
+- abertura e conclusão de manutenções com custo e histórico;
+- sincronização transacional do status dos equipamentos;
+- consulta dos próprios empréstimos e equipamentos pelo colaborador;
+- troca de senha em Minha conta e revogação das demais sessões;
+- termo de responsabilidade imprimível (assinatura manual);
+- inventário filtrado, impressão/PDF pelo navegador e exportação CSV;
+- proteção CSRF e autorização por perfil no servidor.
 
-O link de empréstimos permanece visível como indicação de um módulo planejado, mas essa funcionalidade ainda não faz parte da implementação atual.
+Veja as regras, os testes e o roteiro de atualização em [docs/ATUALIZACAO_MODULOS.md](docs/ATUALIZACAO_MODULOS.md). A versão acadêmica não inclui assinatura eletrônica, recuperação de senha por e-mail nem notificações automáticas.
 
 ## Requisitos
 
 - PHP 8.1 ou superior;
-- extensão `pdo_mysql` habilitada;
+- extensões `pdo_mysql` e `mbstring` habilitadas;
 - MySQL ou MariaDB;
 - Apache com `mod_rewrite` habilitado;
 - Composer.
@@ -87,7 +92,7 @@ O projeto foi desenvolvido e testado localmente com XAMPP, PHP 8.2 e MariaDB.
 6. Acesse a aplicação. Considerando a pasta `rastreio-ti` dentro do `htdocs` do XAMPP:
 
    ```text
-   http://localhost/rastreio-ti/public/login
+   http://localhost/rastreio-ti/login
    ```
 
 > Em produção, prefira configurar `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` e `DB_CHARSET` no ambiente da hospedagem. As variáveis de ambiente prevalecem sobre o arquivo local e as credenciais nunca devem ser versionadas.
@@ -106,15 +111,22 @@ O projeto foi desenvolvido e testado localmente com XAMPP, PHP 8.2 e MariaDB.
 | POST | `/home/equipamentos` | Processamento do cadastro |
 | POST | `/home/equipamentos/atualizar` | Processamento da edição |
 | POST | `/home/equipamentos/excluir` | Exclusão de equipamento |
-| GET | `/home/emprestimos` | Tela informativa do módulo futuro |
-| GET | `/home/categorias` | Tela inicial de categorias |
-| GET | `/home/manutencoes` | Tela inicial de manutenções |
-| GET | `/home/usuarios` | Tela inicial de usuários |
+| GET / POST | `/home/emprestimos` | Listar empréstimos / registrar entrega |
+| POST | `/home/emprestimos/devolver` | Registrar devolução |
+| GET | `/home/emprestimos/termo?id={id}` | Termo para impressão |
+| GET | `/home/categorias` | Listar e editar categorias |
+| POST | `/home/categorias/salvar`, `/home/categorias/excluir` | Gerenciar categorias |
+| GET / POST | `/home/manutencoes` | Listar manutenções / abrir ficha |
+| POST | `/home/manutencoes/concluir` | Concluir ficha e atualizar status |
+| GET | `/home/usuarios` | Listar e editar usuários |
+| POST | `/home/usuarios/salvar` | Cadastrar, editar ou desativar usuário |
+| GET / POST | `/home/conta`, `/home/conta/senha` | Formulário / troca da própria senha |
+| GET | `/home/relatorios`, `/home/relatorios/csv` | Relatório e exportação |
 
-As rotas são relativas ao diretório `public`. Por exemplo:
+As rotas usam o front controller na raiz; `public/` é usado internamente. Por exemplo:
 
 ```text
-http://localhost/rastreio-ti/public/home/equipamentos
+http://localhost/rastreio-ti/home/equipamentos
 ```
 
 ## Estrutura do projeto
@@ -124,6 +136,7 @@ rastreio-ti/
 ├── app/
 │   ├── Controllers/       # Controle das requisições e regras de entrada
 │   ├── Models/            # Models e Repositories de acesso aos dados
+│   ├── Services/          # Regras e transações de movimentação e cadastros
 │   └── Views/             # Layout, componentes e telas
 ├── config/
 │   ├── Database.php          # Conexão PDO e leitura da configuração
@@ -159,11 +172,13 @@ O script atual cria as tabelas:
 - `manutencoes`;
 - `termos_responsabilidade`.
 
-Nesta entrega, a aplicação utiliza diretamente as tabelas `equipamentos` e `categorias`. As demais fazem parte da modelagem preparada para as próximas etapas.
+O sistema utiliza `usuarios`, `categorias`, `equipamentos`, `emprestimos` e `manutencoes`. O termo imprimível é gerado a partir do empréstimo; a tabela `termos_responsabilidade` fica reservada para um futuro armazenamento de documentos assinados. Não é necessária alteração de esquema para atualizar a versão já publicada.
 
-## Demonstração da Entrega Parcial 4
+## Demonstração
 
 Fluxo sugerido para demonstrar o sistema:
+
+O roteiro completo de empréstimo, devolução, manutenção, relatórios e permissões está em [docs/ATUALIZACAO_MODULOS.md](docs/ATUALIZACAO_MODULOS.md). Para o CRUD básico:
 
 1. abrir o dashboard e apresentar os indicadores reais;
 2. acessar a listagem de equipamentos;
@@ -177,4 +192,4 @@ Fluxo sugerido para demonstrar o sistema:
 
 ## Observação de segurança
 
-O diagnóstico público de conexão com o banco foi removido. Não publique arquivos de teste, credenciais ou configurações locais junto com a aplicação.
+O diagnóstico público de conexão com o banco foi removido. Credenciais nunca devem ser versionadas. O servidor usa `config/database.local.php`, protegido contra acesso HTTP. O pacote gerado por `scripts/package.ps1` exclui esse arquivo, testes, SQL, uploads e artefatos locais. Na primeira instalação, configure o arquivo local separadamente; em atualizações, preserve o existente.
