@@ -30,6 +30,8 @@ $csrfToken = Csrf::token();
     <?php endif; ?>
 </div>
 
+<?php $filterRoute = 'home/equipamentos'; require __DIR__ . '/components/filtro-equipamentos.php'; ?>
+<?php if (($_SESSION['usuario_perfil'] ?? '') !== 'admin'): ?><p class="alert alert-info">Exibindo somente equipamentos com empréstimo ativo em seu nome.</p><?php endif; ?>
 <?php if ($mensagem !== null): ?>
     <div class="alert alert-<?= $mensagemErro ? 'danger' : 'success' ?> alert-dismissible fade show" role="alert">
         <?= htmlspecialchars($mensagem) ?>

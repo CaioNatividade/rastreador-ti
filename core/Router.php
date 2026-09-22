@@ -7,6 +7,9 @@ namespace Core;
 use App\Controllers\HomeController;
 use App\Controllers\EquipamentosController;
 use App\Controllers\LoginController;
+use App\Controllers\CadastrosController;
+use App\Controllers\MovimentacoesController;
+use App\Models\UsuarioRepository;
 
 class Router
 {
@@ -18,6 +21,10 @@ class Router
             'home/equipamentos/novo',
             'home/equipamentos/editar',
             'home/usuarios',
+            'home/categorias',
+            'home/manutencoes',
+            'home/relatorios',
+            'home/relatorios/csv',
         ],
         'POST' => [
             'home/equipamentos',
@@ -34,10 +41,14 @@ class Router
             'home/equipamentos' => [EquipamentosController::class, 'index'],
             'home/equipamentos/novo' => [EquipamentosController::class, 'create'],
             'home/equipamentos/editar' => [EquipamentosController::class, 'edit'],
-            'home/categorias' => [HomeController::class, 'categorias'],
-            'home/emprestimos' => [HomeController::class, 'emprestimos'],
-            'home/manutencoes' => [HomeController::class, 'manutencoes'],
-            'home/usuarios' => [HomeController::class, 'usuarios'],
+            'home/categorias' => [CadastrosController::class, 'categorias'],
+            'home/emprestimos' => [MovimentacoesController::class, 'emprestimos'],
+            'home/emprestimos/termo' => [MovimentacoesController::class, 'termo'],
+            'home/manutencoes' => [MovimentacoesController::class, 'manutencoes'],
+            'home/usuarios' => [CadastrosController::class, 'usuarios'],
+            'home/conta' => [CadastrosController::class, 'conta'],
+            'home/relatorios' => [EquipamentosController::class, 'report'],
+            'home/relatorios/csv' => [EquipamentosController::class, 'csv'],
         ],
         'POST' => [
             'home/equipamentos' => [EquipamentosController::class, 'store'],
@@ -45,6 +56,14 @@ class Router
             'home/equipamentos/excluir' => [EquipamentosController::class, 'destroy'],
             'login/autenticar' => [LoginController::class, 'autenticar'],
             'logout' => [LoginController::class, 'logout'],
+            'home/categorias/salvar' => [CadastrosController::class, 'salvarCategoria'],
+            'home/categorias/excluir' => [CadastrosController::class, 'excluirCategoria'],
+            'home/usuarios/salvar' => [CadastrosController::class, 'salvarUsuario'],
+            'home/conta/senha' => [CadastrosController::class, 'senha'],
+            'home/emprestimos' => [MovimentacoesController::class, 'emprestar'],
+            'home/emprestimos/devolver' => [MovimentacoesController::class, 'devolver'],
+            'home/manutencoes' => [MovimentacoesController::class, 'abrirManutencao'],
+            'home/manutencoes/concluir' => [MovimentacoesController::class, 'concluirManutencao'],
         ],
     ];
 
@@ -53,6 +72,19 @@ class Router
         $route = trim((string) ($_GET['rota'] ?? 'login'), '/');
         $route = $route === '' ? 'login' : $route;
         $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+
+        if (isset($_SESSION['usuario_id'])) {
+            $user = (new UsuarioRepository())->findActive((int) $_SESSION['usuario_id']);
+            if ($user === null || (isset($_SESSION['senha_versao']) && !hash_equals($_SESSION['senha_versao'], hash('sha256', $user['senha_hash'])))) {
+                $_SESSION = [];
+                session_regenerate_id(true);
+                $this->redirectToLogin();
+                return;
+            }
+            $_SESSION['usuario_nome'] = $user['nome'];
+            $_SESSION['usuario_perfil'] = $user['perfil'];
+            $_SESSION['senha_versao'] = hash('sha256', $user['senha_hash']);
+        }
 
         if (!in_array($route, self::PUBLIC_ROUTES, true) && !isset($_SESSION['usuario_id'])) {
             $this->redirectToLogin();
@@ -81,6 +113,9 @@ class Router
 
     private function isAdminOnly(string $method, string $route): bool
     {
+        if ($method === 'POST' && !in_array($route, ['login/autenticar', 'logout', 'home/conta/senha'], true)) {
+            return true;
+        }
         return in_array($route, self::ADMIN_ONLY_ROUTES[$method] ?? [], true);
     }
 

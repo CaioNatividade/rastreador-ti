@@ -11,9 +11,9 @@ class EquipamentosRepository
 {
     private PDO $connection;
 
-    public function __construct()
+    public function __construct(?PDO $connection = null)
     {
-        $this->connection = Database::getInstance();
+        $this->connection = $connection ?? Database::getInstance();
     }
 
     public function insert(EquipamentosModel $model): int
@@ -94,7 +94,7 @@ class EquipamentosRepository
     }
 
     /** @return array<int, array<string, mixed>> */
-    public function select(): array
+    public function select(?int $owner = null): array
     {
         $sql = <<<'SQL'
             SELECT
@@ -112,11 +112,15 @@ class EquipamentosRepository
                 categorias.nome AS categoria_nome
             FROM equipamentos
             INNER JOIN categorias ON categorias.id = equipamentos.categoria_id
-            ORDER BY equipamentos.id DESC
             SQL;
 
+        if ($owner !== null) {
+            $sql .= " WHERE EXISTS (SELECT 1 FROM emprestimos p WHERE p.equipamento_id = equipamentos.id AND p.colaborador_id = ? AND p.status = 'ativo')";
+        }
+        $sql .= ' ORDER BY equipamentos.id DESC';
+
         $statement = $this->connection->prepare($sql);
-        $statement->execute();
+        $statement->execute($owner === null ? [] : [$owner]);
 
         return $statement->fetchAll();
     }

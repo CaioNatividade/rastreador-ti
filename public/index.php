@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+date_default_timezone_set('America/Sao_Paulo');
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',

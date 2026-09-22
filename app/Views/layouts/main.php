@@ -1,6 +1,10 @@
 <?php
 /** @var string $view */
 $basePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+$e = static fn ($value): string => htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
+$csrfField = '<input type="hidden" name="csrf" value="' . $e(\Core\Csrf::token()) . '">';
+$formOld = $_SESSION['form_old'] ?? [];
+unset($_SESSION['form_old']);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -20,6 +24,9 @@ $basePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''))
         <?php require dirname(__DIR__) . '/components/sidebar.php'; ?>
 
         <main class="flex-grow-1 p-4">
+            <?php if (isset($_SESSION['flash'])): $flash = $_SESSION['flash']; unset($_SESSION['flash']); ?>
+                <div role="alert" class="alert alert-<?= $flash['error'] ? 'danger' : 'success' ?>"><?= $e($flash['message']) ?></div>
+            <?php endif; ?>
             <?php require $view; ?>
         </main>
     </div>
